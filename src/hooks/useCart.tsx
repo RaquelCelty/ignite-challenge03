@@ -36,20 +36,20 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     try {
       const hasProductInStorage = cart.some(item => item.id === productId);
 
-      if (hasProductInStorage) {
-        const productInCart = cart.find(item => item.id === productId);
+      if (!hasProductInStorage) {
+        const productSelected = await api.get(`/products/${productId}`);
+        const data = { ...productSelected.data, amount: 1 }
 
+        setCart([...cart, data]);
+        localStorage.setItem('@RocketShoes:cart', JSON.stringify([...cart, data]));
+      } else {
+        const productInCartObj = cart.find(item => item.id === productId);
         const productInput = {
           productId: productId,
-          amount: productInCart!.amount + 1
+          amount: productInCartObj!.amount + 1
         }
 
         updateProductAmount(productInput);
-      } else {
-        const productSelected = await api.get(`/products/${productId}`);
-        const data = { ...productSelected.data, amount: 1 }
-        setCart([...cart, data]);
-        localStorage.setItem('@RocketShoes:cart', JSON.stringify([...cart, data]));
       }
     } catch {
       toast.error('Erro na adição do produto');
@@ -59,17 +59,15 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
   const removeProduct = (productId: number) => {
     try {
       const hasProductInStorage = cart.some(item => item.id === productId);
+      if (!hasProductInStorage) throw new Error();
 
-      if (hasProductInStorage) {
-        var cartSlicedArray = cart.filter(product => {
-          return product.id !== productId;
-        });
+      var cartSlicedArray = cart.filter(product => {
+        return product.id !== productId;
+      });
 
-        setCart(cartSlicedArray);
-        localStorage.setItem('@RocketShoes:cart', JSON.stringify(cartSlicedArray));
-      } else {
-        toast.error('Erro na remoção do produto');
-      }
+      setCart(cartSlicedArray);
+      localStorage.setItem('@RocketShoes:cart', JSON.stringify(cartSlicedArray));
+
     } catch {
       toast.error('Erro na remoção do produto');
     }
