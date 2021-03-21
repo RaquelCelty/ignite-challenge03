@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { formatPrice } from '../../util/format';
 import { useCart } from '../../hooks/useCart';
 
